@@ -1,0 +1,38 @@
+public class Movie {
+    private String name;
+    private String director;
+    private String actor;
+    private String limitAge;
+    private String country;
+    private String brief;
+    private String image;
+    private String releaseDate;
+    private String endDate;
+    private int duration;
+
+    public Movie(String name, String director, String actor, String limitAge, String country,
+                 String brief, String image, String releaseDate, String endDate, int duration) {
+        this.name = name;
+        this.director = director;
+        this.actor = actor;
+        this.limitAge = limitAge;
+        this.country = country;
+        this.brief = brief;
+        this.image = image;
+        this.releaseDate = releaseDate;
+        this.endDate = endDate;
+        this.duration = duration;
+    }
+
+    // Các phương thức getter
+    public String getName() { return name; }
+    public String getDirector() { return director; }
+    public String getActor() { return actor; }
+    public String getLimitAge() { return limitAge; }
+    public String getCountry() { return country; }
+    public String getBrief() { return brief; }
+    public String getImage() { return image; }
+    public String getReleaseDate() { return releaseDate; }
+    public String getEndDate() { return endDate; }
+    public int getDuration() { return duration; }
+}
