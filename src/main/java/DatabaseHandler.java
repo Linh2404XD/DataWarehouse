@@ -1,7 +1,9 @@
 import com.opencsv.CSVWriter;
 
 import java.io.FileWriter;
+import java.io.IOException;
 import java.sql.*;
+import java.util.List;
 
 public class DatabaseHandler {
     private Connection connection;
@@ -30,17 +32,32 @@ public class DatabaseHandler {
             stmt.executeUpdate();
         }
     }
+    // Bước 4: Lưu dữ liệu từ file CSV vào staging
+    public boolean saveToCSV(List<Movie> movies, String filePath) {
+        try (CSVWriter writer = new CSVWriter(new FileWriter(filePath))) {
+            // Ghi tiêu đề cột
+            String[] header = {"Name", "Director", "Actor", "LimitAge", "Country", "Brief", "Image", "ReleaseDate", "EndDate", "Duration"};
+            writer.writeNext(header);
 
-    public boolean saveToCSV(String filePath) {
-        // Bước 4: Lưu dữ liệu từ staging vào file CSV
-        String sql = "SELECT * FROM phimchieurap_staging";
-        try (Statement stmt = connection.createStatement();
-             ResultSet rs = stmt.executeQuery(sql)) {
-            try (CSVWriter writer = new CSVWriter(new FileWriter(filePath))) {
-                writer.writeAll(rs, true);
-                return true;
+            // Ghi dữ liệu các bộ phim
+            for (Movie movie : movies) {
+                String[] row = {
+                        movie.getName(),
+                        movie.getDirector(),
+                        movie.getActor(),
+                        movie.getLimitAge(),
+                        movie.getCountry(),
+                        movie.getBrief(),
+                        movie.getImage(),
+                        movie.getReleaseDate(),
+                        movie.getEndDate(),
+                        String.valueOf(movie.getDuration())
+                };
+                writer.writeNext(row);
             }
-        } catch (Exception e) {
+
+            return true; // Thêm dữ liệu thành công
+        } catch (IOException e) {
             e.printStackTrace();
             return false;
         }

@@ -3,6 +3,8 @@ import org.jsoup.select.Elements;
 
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.List;
+import java.util.ArrayList;
 
 public class Main {
     public static void main(String[] args) {
@@ -19,22 +21,40 @@ public class Main {
 
             // Gọi hàm lấy dữ liệu cần crawl (dựa theo config)
             Crawler crawler = new Crawler(config.getProperty("source.url"));
-            Elements movies = crawler.fetchMovies();
+            Elements moviesElements = crawler.fetchMovies();
 
             // Bước 2: Kiểm tra dữ liệu trả về
-            if (movies == null || movies.isEmpty()) {
+            if (moviesElements == null || moviesElements.isEmpty()) {
                 System.out.println("Không có dữ liệu nào được trả về từ trang web!");
                 dbHandler.logError("Dữ liệu trả về = null");
                 return;
             }
 
-            // Bước 3: Thực hiện crawl từng bộ phim trong danh sách
-            for (Element movieElement : movies) {
+            // Bước 3: Phân tích dữ liệu và tạo danh sách các bộ phim
+            List<Movie> movies = new ArrayList<>();
+            for (Element movieElement : moviesElements) {
                 try {
                     // Phân tích dữ liệu từng bộ phim
                     Movie movie = crawler.parseMovie(movieElement);
+                    movies.add(movie);
+                } catch (Exception ex) {
+                    // Log lỗi nếu quá trình crawl phim gặp vấn đề
+                    dbHandler.logError("Lỗi khi crawl phim: " + ex.getMessage());
+                }
+            }
 
-                    // Lưu vào bảng staging
+            // Bước 4: Lưu dữ liệu vào file CSV
+            boolean saveSuccess = dbHandler.saveToCSV(movies, "cinestar.csv");
+            if (saveSuccess) {
+                System.out.println("Dữ liệu đã được lưu vào file cinestar.csv thành công.");
+            } else {
+                System.out.println("Lỗi khi lưu dữ liệu vào file cinestar.csv.");
+                dbHandler.logError("Lỗi khi lưu file cinestar.csv.");
+            }
+
+            // Bước 5: Lưu vào bảng staging
+            for (Movie movie : movies) {
+                try {
                     dbHandler.insertOrUpdateStaging(
                             movie.getName(),
                             movie.getDirector(),
@@ -47,19 +67,9 @@ public class Main {
                             movie.getEndDate(),
                             movie.getDuration()
                     );
-                } catch (Exception ex) {
-                    // Log lỗi nếu quá trình crawl phim gặp vấn đề
-                    dbHandler.logError("Lỗi khi crawl phim: " + ex.getMessage());
+                } catch (SQLException ex) {
+                    dbHandler.logError("Lỗi khi chèn dữ liệu vào bảng staging: " + ex.getMessage());
                 }
-            }
-
-            // Bước 4: Lưu kết quả vào file CSV
-            boolean saveSuccess = dbHandler.saveToCSV(config.getProperty("source.file"));
-            if (saveSuccess) {
-                System.out.println("Dữ liệu đã được lưu vào file CSV thành công.");
-            } else {
-                System.out.println("Lỗi khi lưu dữ liệu vào file CSV.");
-                dbHandler.logError("Lỗi khi lưu file CSV.");
             }
 
         } catch (IOException e) {
