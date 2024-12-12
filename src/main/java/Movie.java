@@ -24,6 +24,10 @@ public class Movie {
         this.duration = duration;
     }
 
+    public Movie() {
+
+    }
+
     // Các phương thức getter
     public String getName() { return name; }
     public String getDirector() { return director; }
@@ -35,4 +39,15 @@ public class Movie {
     public String getReleaseDate() { return releaseDate; }
     public String getEndDate() { return endDate; }
     public int getDuration() { return duration; }
+
+    public void setName(String name) {this.name = name;}
+    public void setDirector(String director) {this.director = director;}
+    public void setBrief(String brief) {this.brief = brief;}
+    public void setCountry(String country) {this.country = country;}
+    public void setDuration(int duration) {this.duration = duration;}
+    public void setEndDate(String endDate) {this.endDate = endDate;}
+    public void setImage(String image) {this.image = image;}
+    public void setLimitAge(String limitAge) {this.limitAge = limitAge;}
+    public void setReleaseDate(String releaseDate) {this.releaseDate = releaseDate;}
+    public void setActor(String actor) {this.actor = actor;}
 }

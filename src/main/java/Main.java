@@ -2,6 +2,7 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -45,9 +46,9 @@ public class Main {
             }
 
             // Bước 4: Lưu dữ liệu vào file CSV
-            boolean saveSuccess = dbHandler.saveToCSV(movies, "cinestar.csv");
+            boolean saveSuccess = dbHandler.saveToCSV(movies, config.getProperty("source.file"));
             if (saveSuccess) {
-                System.out.println("Dữ liệu đã được lưu vào file cinestar.csv thành công.");
+                System.out.println("Dữ liệu đã được lưu vào file " + config.getProperty("source.file") + " thành công.");
             } else {
                 System.out.println("Lỗi khi lưu dữ liệu vào file cinestar.csv.");
                 dbHandler.logError("Lỗi khi lưu file cinestar.csv.");
@@ -68,10 +69,15 @@ public class Main {
                             movie.getEndDate(),
                             movie.getDuration()
                     );
+// Ghi log sau khi thêm dữ liệu thành công vào bảng staging
+                    dbHandler.logSuccess("Thêm dữ liệu thành công cho phim: " + movie.getName());
                 } catch (SQLException ex) {
                     dbHandler.logError("Lỗi khi chèn dữ liệu vào bảng staging: " + ex.getMessage());
                 }
+
             }
+            // 8.Ghi log và cập nhật status của table config= SUCCESS
+            System.out.println("Thêm dữ liệu thành công vào bảng Staging thành công");
 
         } catch (IOException e) {
             e.printStackTrace();

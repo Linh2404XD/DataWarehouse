@@ -6,7 +6,7 @@ public class ConfigLoader {
     private Properties properties;
 
     public ConfigLoader(String configFile) throws IOException {
-        // Bước 1: Đọc file config.properties
+        // 1. Load file config.properties
         properties = new Properties();
         try (FileInputStream fis = new FileInputStream(configFile)) {
             properties.load(fis);
