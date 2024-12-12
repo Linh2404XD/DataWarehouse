@@ -80,33 +80,11 @@ public class DatabaseHandler {
             writer.writeNext(header);
 
             // Ghi dữ liệu các bộ phim
-            SimpleDateFormat inputFormat = new SimpleDateFormat("dd/MM/yyyy");
-            SimpleDateFormat outputFormat = new SimpleDateFormat("yyyy-MM-dd");
 
             for (Movie movie : movies) {
                 String releaseDateFormatted = movie.getReleaseDate();
                 String endDateFormatted = movie.getEndDate();
 
-                // Chuyển đổi ngày nếu có
-                if (releaseDateFormatted != null && !releaseDateFormatted.isEmpty()) {
-                    try {
-                        Date releaseDate = (Date) inputFormat.parse(releaseDateFormatted);
-                        releaseDateFormatted = outputFormat.format(releaseDate);
-                    } catch (Exception e) {
-                        // Log lỗi nếu không thể chuyển đổi ngày
-                        System.out.println("Lỗi khi chuyển đổi releaseDate: " + releaseDateFormatted);
-                    }
-                }
-
-                if (endDateFormatted != null && !endDateFormatted.isEmpty()) {
-                    try {
-                        Date endDate = (Date) inputFormat.parse(endDateFormatted);
-                        endDateFormatted = outputFormat.format(endDate);
-                    } catch (Exception e) {
-                        // Log lỗi nếu không thể chuyển đổi ngày
-                        System.out.println("Lỗi khi chuyển đổi endDate: " + endDateFormatted);
-                    }
-                }
 
                 String[] row = {
                         movie.getName(),

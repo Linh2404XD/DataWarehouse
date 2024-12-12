@@ -21,6 +21,7 @@ public class Crawler {
         return doc.select(".web-movie-box"); // Sử dụng selector chính xác cho phim
     }
 
+
     public Movie parseMovie(Element movieElement) throws IOException {
         String name = movieElement.select(".name").first().text();
 
@@ -101,6 +102,7 @@ public class Crawler {
 
 
 
+
     public static void main(String[] args) throws IOException {
         // Thay đổi URL theo website mà bạn muốn crawl
         String url = "https://cinestar.com.vn/";
@@ -119,7 +121,7 @@ public class Crawler {
             System.out.println("Quốc gia: " + movie.getCountry());
             System.out.println("Mô tả: " + movie.getBrief());
             System.out.println("Hình ảnh: " + movie.getImage());
-            System.out.println("Ngày phát hành" + movie.getReleaseDate());
+            System.out.println("Ngày phát hành: " + movie.getReleaseDate());
             System.out.println("Ngày kết thúc: " + movie.getEndDate());
             System.out.println("Thời lượng: " + movie.getDuration() + " phút");
             System.out.println("--------------------------------------------------");
