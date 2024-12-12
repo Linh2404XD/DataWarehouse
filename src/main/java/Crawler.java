@@ -4,6 +4,8 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 public class Crawler {
 
@@ -20,62 +22,84 @@ public class Crawler {
     }
 
     public Movie parseMovie(Element movieElement) throws IOException {
-        // Phân tích thông tin chi tiết từng bộ phim
-        String name = movieElement.select(".name").first().text(); // Lấy phần tử đầu tiên nếu có nhiều phần tử trùng
+        String name = movieElement.select(".name").first().text();
 
-        // Lấy đường dẫn đến trang chi tiết phim
         String movieDetailUrl = movieElement.select("a").attr("href");
         if (!movieDetailUrl.startsWith("http")) {
-            movieDetailUrl = "https://www.cinestar.com.vn" + movieDetailUrl; // Thêm domain vào nếu đường dẫn là relative
+            movieDetailUrl = "https://www.cinestar.com.vn" + movieDetailUrl;
         }
 
-        // Gọi trang chi tiết phim để lấy thêm thông tin
         Document movieDetailDoc = Jsoup.connect(movieDetailUrl).get();
-// Lấy thông tin từ trang chi tiết
+
         String director = "";
         String actor = "";
         String releaseDate = "";
         String brief = "";
 
-        // Lấy thông tin trong phần MÔ TẢ
+        // Phân tích phần MÔ TẢ
         Element descriptionElement = movieDetailDoc.select(".detail-ct-bd").first();
         if (descriptionElement != null) {
-            Elements infoItems = descriptionElement.select("ul li");
+            Elements infoItems = descriptionElement.select("ul li"); // Chọn đúng danh sách li
 
-            // Lấy đạo diễn
-            if (infoItems.size() > 0) {
-                director = infoItems.get(0).text().replace("Đạo diễn: ", "").trim();
-            }
+            // Kiểm tra số lượng phần tử
+            int size = infoItems.size();
 
-            // Lấy diễn viên
-            if (infoItems.size() > 1) {
-                actor = infoItems.get(1).text().replace("Diễn viên: ", "").trim();
-            }
+            if (size == 1) {
+                // Nếu chỉ có 1 phần tử, phần tử 0 là "Khởi chiếu"
+                String text = infoItems.get(0).text().replaceAll("<!--.*?-->", "").trim(); // Loại bỏ chú thích <!-- -->
+                releaseDate = text;
 
-            // Lấy ngày phát hành (kiểm tra nếu có phần tử thứ 3)
-            if (infoItems.size() > 2) {
-                releaseDate = infoItems.get(2).text().replace("Khởi chiếu: ", "").trim();
+            } else if (size == 2) {
+                // Nếu có 2 phần tử, phần tử 0 là "Đạo diễn", phần tử 1 là "Khởi chiếu"
+                String directorText = infoItems.get(0).text().replaceAll("<!--.*?-->", "").trim();
+                director = directorText;
+
+
+                String releaseText = infoItems.get(1).text().replaceAll("<!--.*?-->", "").trim();
+                releaseDate = releaseText;
+
+            } else if (size == 3) {
+                // Nếu có 3 phần tử, phần tử 0 là "Đạo diễn", phần tử 1 là "Diễn viên", phần tử 2 là "Khởi chiếu"
+                String directorText = infoItems.get(0).text().replaceAll("<!--.*?-->", "").trim();
+                director = directorText;
+
+
+                String actorText = infoItems.get(1).text().replaceAll("<!--.*?-->", "").trim();
+                actor = actorText;
+
+
+                String releaseText = infoItems.get(2).text().replaceAll("<!--.*?-->", "").trim();
+                releaseDate = releaseText;
+
             }
         }
+
         brief = movieDetailDoc.select("p.txt.line-clamp-6").text();
 
-
-        String limitAge = movieElement.select(".age .num").text() + " " + movieElement.select(".age .txt").text(); // Kết hợp số và loại độ tuổi
+        String limitAge = movieElement.select(".age .num").text() + " " + movieElement.select(".age .txt").text();
         String country = movieElement.select(".info-item i.fa-earth-americas + span.txt").text();
-        String image = movieElement.select(".image img").attr("src"); // Đường dẫn hình ảnh
-        String endDate = movieDetailDoc.select(".end-date-selector").text(); // Ngày kết thúc
+        String image = movieElement.select(".image img").attr("src");
+        String endDate = movieDetailDoc.select(".end-date-selector").text();
+
         int duration = 0;
         String durationText = movieElement.select(".info-item .txt").stream()
                 .map(Element::text)
-                .filter(e -> e.contains("'")) // Kiểm tra chuỗi chứa thời lượng (ví dụ 80')
+                .filter(e -> e.contains("'"))
                 .findFirst()
                 .orElse("");
         if (!durationText.isEmpty()) {
-            duration = Integer.parseInt(durationText.replace("'", "").trim()); // Xử lý thời lượng
+            try {
+                duration = Integer.parseInt(durationText.replace("'", "").trim());
+            } catch (NumberFormatException e) {
+                System.err.println("Error parsing duration: " + durationText);
+            }
         }
 
         return new Movie(name, director, actor, limitAge, country, brief, image, releaseDate, endDate, duration);
     }
+
+
+
 
     public static void main(String[] args) throws IOException {
         // Thay đổi URL theo website mà bạn muốn crawl
