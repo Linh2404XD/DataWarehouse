@@ -1,4 +1,5 @@
 public class Movie {
+    private String id;
     private String name;
     private String director;
     private String actor;
@@ -10,8 +11,10 @@ public class Movie {
     private String endDate;
     private int duration;
 
-    public Movie(String name, String director, String actor, String limitAge, String country,
+    // Constructor, getters, and setters
+    public Movie(String id, String name, String director, String actor, String limitAge, String country,
                  String brief, String image, String releaseDate, String endDate, int duration) {
+        this.id = id;
         this.name = name;
         this.director = director;
         this.actor = actor;
@@ -24,11 +27,20 @@ public class Movie {
         this.duration = duration;
     }
 
-    public Movie() {
 
+    // Constructor mặc định
+    public Movie() {}
+
+    // Getter và Setter cho id
+    public String getId() {
+        return id;
     }
 
-    // Các phương thức getter
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    // Các getter còn lại
     public String getName() { return name; }
     public String getDirector() { return director; }
     public String getActor() { return actor; }
@@ -40,14 +52,15 @@ public class Movie {
     public String getEndDate() { return endDate; }
     public int getDuration() { return duration; }
 
-    public void setName(String name) {this.name = name;}
-    public void setDirector(String director) {this.director = director;}
-    public void setBrief(String brief) {this.brief = brief;}
-    public void setCountry(String country) {this.country = country;}
-    public void setDuration(int duration) {this.duration = duration;}
-    public void setEndDate(String endDate) {this.endDate = endDate;}
-    public void setImage(String image) {this.image = image;}
-    public void setLimitAge(String limitAge) {this.limitAge = limitAge;}
-    public void setReleaseDate(String releaseDate) {this.releaseDate = releaseDate;}
-    public void setActor(String actor) {this.actor = actor;}
+    // Các setter còn lại
+    public void setName(String name) { this.name = name; }
+    public void setDirector(String director) { this.director = director; }
+    public void setActor(String actor) { this.actor = actor; }
+    public void setLimitAge(String limitAge) { this.limitAge = limitAge; }
+    public void setCountry(String country) { this.country = country; }
+    public void setBrief(String brief) { this.brief = brief; }
+    public void setImage(String image) { this.image = image; }
+    public void setReleaseDate(String releaseDate) { this.releaseDate = releaseDate; }
+    public void setEndDate(String endDate) { this.endDate = endDate; }
+    public void setDuration(int duration) { this.duration = duration; }
 }

@@ -22,6 +22,7 @@ public class CSVToStaging {
             for (Movie movie : movies) {
                 try {
                     dbHandler.insertOrUpdateStaging(
+                            movie.getId(),
                             movie.getName(),
                             movie.getDirector(),
                             movie.getActor(),
@@ -34,14 +35,15 @@ public class CSVToStaging {
                             movie.getDuration()
 
                     );
-                    System.out.println(movie.getName());
+                    System.out.println("Dữ liệu đã được chèn thành công vào bảng staging.");
+                    // 7.1.Ghi log và cập nhật status của table config= SUCCESS
                     dbHandler.logSuccess("Dữ liệu đã được chèn thành công cho phim: " + movie.getName());
                 } catch (SQLException ex) {
+                    // 7.2 Ghi log
                     dbHandler.logError("Lỗi khi chèn dữ liệu vào bảng staging: " + ex.getMessage());
                 }
             }
 
-//            System.out.println("Dữ liệu đã được chèn thành công vào bảng staging.");
 
         } catch (IOException | SQLException e) {
             e.printStackTrace();

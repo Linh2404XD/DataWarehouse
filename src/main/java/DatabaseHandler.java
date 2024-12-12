@@ -8,11 +8,9 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Date;
 
@@ -24,88 +22,63 @@ public class DatabaseHandler {
         connection = DriverManager.getConnection(url, username, password);
     }
 
-    // Bước 3: Gọi stored procedure để lưu dữ liệu phim vào bảng staging
-    public void insertOrUpdateStaging(String name, String director, String actor, String limitAge,
+
+    // 4. Thực hiện insert vào staging
+    public void insertOrUpdateStaging(String id, String name, String director, String actor, String limitAge,
                                       String country, String brief, String image,
                                       String releaseDate, String endDate, int duration) throws SQLException {
-        // Loại bỏ phần tên ngày trong tuần nếu có (ví dụ: "Thứ Hai, ", "Thứ Bảy, ").
-        String cleanedReleaseDate = releaseDate.replaceAll("^.*?\\s*,\\s*", "").trim();  // Loại bỏ tên ngày như "Thứ Hai, "
-        String cleanedEndDate = endDate.replaceAll("^.*?\\s*,\\s*", "").trim();  // Loại bỏ tên ngày nếu có
+        // Loại bỏ phần tên ngày trong tuần nếu có
+        String cleanedReleaseDate = releaseDate.replaceAll("^.*?\\s*,\\s*", "").trim();
+        String cleanedEndDate = endDate.replaceAll("^.*?\\s*,\\s*", "").trim();
 
-        // Chuyển đổi releaseDate và endDate sang định dạng chuẩn (yyyy-MM-dd)
+        // Chuyển đổi định dạng ngày tháng
         SimpleDateFormat inputFormat = new SimpleDateFormat("dd/MM/yyyy");
         SimpleDateFormat outputFormat = new SimpleDateFormat("yyyy-MM-dd");
 
         String formattedReleaseDate = null;
         String formattedEndDate = null;
 
-        // Chuyển đổi releaseDate
         try {
-            if (cleanedReleaseDate != null && !cleanedReleaseDate.isEmpty()) {
-                Date parsedReleaseDate = inputFormat.parse(cleanedReleaseDate); // Đảm bảo cleanedReleaseDate có định dạng đúng
+            if (!cleanedReleaseDate.isEmpty()) {
+                Date parsedReleaseDate = inputFormat.parse(cleanedReleaseDate);
                 formattedReleaseDate = outputFormat.format(parsedReleaseDate);
             }
         } catch (Exception e) {
-            // Log lỗi nếu không thể chuyển đổi releaseDate
             System.out.println("Lỗi khi chuyển đổi releaseDate: " + cleanedReleaseDate);
-            formattedReleaseDate = null; // Hoặc có thể gán giá trị mặc định
         }
 
-        // Chuyển đổi endDate
         try {
-            if (cleanedEndDate != null && !cleanedEndDate.isEmpty()) {
-                Date parsedEndDate = inputFormat.parse(cleanedEndDate); // Đảm bảo cleanedEndDate có định dạng đúng
+            if (!cleanedEndDate.isEmpty()) {
+                Date parsedEndDate = inputFormat.parse(cleanedEndDate);
                 formattedEndDate = outputFormat.format(parsedEndDate);
             }
         } catch (Exception e) {
-            // Log lỗi nếu không thể chuyển đổi endDate
             System.out.println("Lỗi khi chuyển đổi endDate: " + cleanedEndDate);
-            formattedEndDate = null; // Hoặc bạn có thể gán giá trị mặc định
         }
 
-        // In nội dung trước khi kiểm tra và chèn
-        System.out.println("Chèn dữ liệu: " + name + ", " + director + ", " + actor + ", " + limitAge + ", " + country + ", " + brief + ", " + image + ", " + formattedReleaseDate + ", " + formattedEndDate + ", " + duration);
-
-        // Kiểm tra xem dữ liệu đã tồn tại hay chưa
-        String checkSql = "SELECT phimchieurap_staging.name FROM phimchieurap_staging WHERE name = ?";
-        try (PreparedStatement checkStmt = connection.prepareStatement(checkSql)) {
-            checkStmt.setString(1, name);
-            ResultSet rs = checkStmt.executeQuery();
-            if (rs.next()) {
-                // Nếu đã tồn tại, cập nhật ngày updated_at
-                System.out.println("Dữ liệu đã tồn tại: " + name);
-                String updateSql = "UPDATE phimchieurap_staging SET updated_at = NOW() WHERE name = ?";
-                try (PreparedStatement updateStmt = connection.prepareStatement(updateSql)) {
-                    updateStmt.setString(1, name);
-                    updateStmt.executeUpdate();
-                }
-            } else {
-                // Nếu chưa tồn tại, thực hiện insert
-                System.out.println("Chèn mới dữ liệu: " + name);
-                String insertSql = "CALL insert_or_update_phimchieurapStaging(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-                try (PreparedStatement insertStmt = connection.prepareStatement(insertSql)) {
-                    insertStmt.setString(1, name);
-                    insertStmt.setString(2, director);
-                    insertStmt.setString(3, actor);
-                    insertStmt.setString(4, limitAge);
-                    insertStmt.setString(5, country);
-                    insertStmt.setString(6, brief);
-                    insertStmt.setString(7, image);
-                    insertStmt.setString(8, formattedReleaseDate);
-                    insertStmt.setString(9, formattedEndDate);
-                    insertStmt.setInt(10, duration);
-                    insertStmt.executeUpdate();
-                }
-            }
+        // Gọi stored procedure
+        String sql = "CALL insert_or_update_phimchieurapStaging(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setString(1, id);
+            stmt.setString(2, name);
+            stmt.setString(3, director);
+            stmt.setString(4, actor);
+            stmt.setString(5, limitAge);
+            stmt.setString(6, country);
+            stmt.setString(7, brief);
+            stmt.setString(8, image);
+            stmt.setString(9, formattedReleaseDate);
+            stmt.setString(10, formattedEndDate);
+            stmt.setInt(11, duration);
+            stmt.executeUpdate();
         }
     }
-
 
     // Bước 4: Lưu dữ liệu từ file CSV vào staging
     public boolean saveToCSV(List<Movie> movies, String filePath) {
         try (CSVWriter writer = new CSVWriter(new FileWriter(filePath))) {
             // Ghi tiêu đề cột
-            String[] header = {"Name", "Director", "Actor", "LimitAge", "Country", "Brief", "Image", "ReleaseDate", "EndDate", "Duration"};
+            String[] header = {"ID", "Name", "Director", "Actor", "LimitAge", "Country", "Brief", "Image", "ReleaseDate", "EndDate", "Duration"};
             writer.writeNext(header);
 
             // Ghi dữ liệu các bộ phim
@@ -113,6 +86,7 @@ public class DatabaseHandler {
                 String releaseDateFormatted = movie.getReleaseDate();
                 String endDateFormatted = movie.getEndDate();
                 String[] row = {
+                        movie.getId(),
                         movie.getName(),
                         movie.getDirector(),
                         movie.getActor(),
@@ -151,6 +125,8 @@ public class DatabaseHandler {
             stmt.executeUpdate();
         }
     }
+
+    // 3. Đọc file csv
     public static List<Movie> loadFromCSV(String filePath) {
         List<Movie> movies = new ArrayList<>();
 
@@ -160,28 +136,29 @@ public class DatabaseHandler {
 
             while ((line = reader.readNext()) != null) {
                 System.out.println("Đọc dòng: " + String.join(",", line));
-                if (line.length < 10) {
+                if (line.length < 11) {
                     System.err.println("Dòng không đủ dữ liệu: " + String.join(",", line));
                     continue;
                 }
 
                 try {
                     Movie movie = new Movie();
-                    movie.setName(line[0].trim());
+                    movie.setId(line[0].trim());
+                    movie.setName(line[1].trim());
                     System.out.println("Tên phim: " + movie.getName());
-                    movie.setDirector(line[1].trim());
-                    movie.setActor(line[2].trim());
-                    movie.setLimitAge(line[3].trim());
-                    movie.setCountry(line[4].trim());
-                    movie.setBrief(line[5].trim());
-                    movie.setImage(line[6].trim());
-                    movie.setReleaseDate(line[7].trim());
-                    movie.setEndDate(line[8].trim());
+                    movie.setDirector(line[2].trim());
+                    movie.setActor(line[3].trim());
+                    movie.setLimitAge(line[4].trim());
+                    movie.setCountry(line[5].trim());
+                    movie.setBrief(line[6].trim());
+                    movie.setImage(line[7].trim());
+                    movie.setReleaseDate(line[8].trim());
+                    movie.setEndDate(line[9].trim());
 
                     try {
-                        movie.setDuration(Integer.parseInt(line[9].trim()));
+                        movie.setDuration(Integer.parseInt(line[10].trim()));
                     } catch (NumberFormatException e) {
-                        System.err.println("Lỗi chuyển đổi 'Duration' thành số: " + line[9]);
+                        System.err.println("Lỗi chuyển đổi 'Duration' thành số: " + line[10]);
                         movie.setDuration(0); // Giá trị mặc định nếu không thể chuyển đổi
                     }
 

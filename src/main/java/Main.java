@@ -58,6 +58,7 @@ public class Main {
             for (Movie movie : movies) {
                 try {
                     dbHandler.insertOrUpdateStaging(
+                            movie.getId(),
                             movie.getName(),
                             movie.getDirector(),
                             movie.getActor(),

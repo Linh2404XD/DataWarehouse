@@ -16,7 +16,7 @@ public class Crawler {
     }
 
     public Elements fetchMovies() throws IOException {
-        // Bước 2: Crawl toàn bộ danh sách phim từ trang web
+        // 6.Thực hiện craw dữ liệu
         Document doc = Jsoup.connect(url).get();
         return doc.select(".web-movie-box"); // Sử dụng selector chính xác cho phim
     }
@@ -29,6 +29,9 @@ public class Crawler {
         if (!movieDetailUrl.startsWith("http")) {
             movieDetailUrl = "https://www.cinestar.com.vn" + movieDetailUrl;
         }
+
+        // Lấy ID từ URL (giả sử ID là chuỗi UUID)
+        String id = movieDetailUrl.substring(movieDetailUrl.lastIndexOf("/") + 1);
 
         Document movieDetailDoc = Jsoup.connect(movieDetailUrl).get();
 
@@ -55,7 +58,6 @@ public class Crawler {
                 String directorText = infoItems.get(0).text().replaceAll("<!--.*?-->", "").trim();
                 director = directorText;
 
-
                 String releaseText = infoItems.get(1).text().replaceAll("<!--.*?-->", "").trim();
                 releaseDate = releaseText;
 
@@ -64,14 +66,11 @@ public class Crawler {
                 String directorText = infoItems.get(0).text().replaceAll("<!--.*?-->", "").trim();
                 director = directorText;
 
-
                 String actorText = infoItems.get(1).text().replaceAll("<!--.*?-->", "").trim();
                 actor = actorText;
 
-
                 String releaseText = infoItems.get(2).text().replaceAll("<!--.*?-->", "").trim();
                 releaseDate = releaseText;
-
             }
         }
 
@@ -96,8 +95,9 @@ public class Crawler {
             }
         }
 
-        return new Movie(name, director, actor, limitAge, country, brief, image, releaseDate, endDate, duration);
+        return new Movie(id, name, director, actor, limitAge, country, brief, image, releaseDate, endDate, duration);
     }
+
 
 
 
